@@ -1,15 +1,11 @@
 import tkinter as tk
 import random
+from FileManager import FileManager
+
+fileManager = FileManager()
 
 # 单词列表
-word_list = [
-    ("apple", "苹果"),
-    ("banana", "香蕉"),
-    ("orange", "橙子"),
-    ("grape", "葡萄"),
-    ("watermelon", "西瓜"),
-    ("pineapple", "菠萝"),
-]
+word_list = fileManager.get_words_list()
 
 # 随机选择一个单词
 current_word, current_meaning = random.choice(word_list)
