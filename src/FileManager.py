@@ -13,8 +13,6 @@ class FileManager:
             self.get_file_words_list(file_path)
 
     def get_file_words_list(self, file_path):
-        self.words_dict = dict()
-
         with open(file_path, 'r', encoding='utf-8') as f:
             for line in f:
                 find_index = line.find('  ')
