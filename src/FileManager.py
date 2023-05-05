@@ -2,7 +2,7 @@ import os
 
 class FileManager:
     def __init__(self):
-        folder_path = 'vocabulary'
+        folder_path = '../vocabulary'
         self.file_paths = []
         self.words_dict = dict()
         for root, dirs, files in os.walk(folder_path):
