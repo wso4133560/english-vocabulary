@@ -4,18 +4,15 @@ import os
 import csv
 from bs4 import BeautifulSoup
 from playsound import playsound
-from FileManager import FileManager
 
 try:
-    from PyQt5.QtCore import QSize
+    from PyQt5.QtCore import Qt
     from PyQt5.QtGui import QStandardItemModel, QStandardItem
-    from PyQt5.QtWidgets import QListView, QWidget, QHBoxLayout, QLineEdit, \
-        QPushButton, QApplication
+    from PyQt5.QtWidgets import QTableView, QApplication, QAction, QMainWindow
 except ImportError:
-    from PySide2.QtCore import QSize
+    from PySide2.QtCore import Qt
     from PySide2.QtGui import QStandardItemModel, QStandardItem
-    from PySide2.QtWidgets import QListView, QWidget, QHBoxLayout, QLineEdit, \
-        QPushButton, QApplication
+    from PySide2.QtWidgets import QTableView, QApplication, QAction
 
 def on_button_click(word):
     word = word.lower()
@@ -51,53 +48,98 @@ def on_button_click(word):
     with open(filePath, "wb") as f:
         f.write(response.content)
     playsound(filePath)
-    
 
-class CustomWidget(QWidget):
+class TableView(QTableView):
 
-    def __init__(self, text, note, *args, **kwargs):
-        super(CustomWidget, self).__init__(*args, **kwargs)
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(QLineEdit(text, self))
-        layout.addWidget(QLineEdit(note, self))
-        button = QPushButton("发音")
-        button.clicked.connect(lambda: on_button_click(text))
-        layout.addWidget(button)
+    def __init__(self, parent=None):
+        super(TableView, self).__init__(parent)
+        self.resize(800, 600)
+        self.setContextMenuPolicy(Qt.ActionsContextMenu)  # 右键菜单
+        self.setEditTriggers(self.NoEditTriggers)  # 禁止编辑
+        self.doubleClicked.connect(self.onDoubleClick)
+        self.addAction(QAction("复制", self, triggered=self.copyData))
+        self.myModel = QStandardItemModel()  # model
+        self.initHeader()  # 初始化表头
+        self.setModel(self.myModel)
+        self.initData()  # 初始化模拟数据
 
-    def sizeHint(self):
-        # 决定item的高度
-        return QSize(200, 40)
+    def onDoubleClick(self, index):
+        if 0 == index.column():
+            on_button_click(index.data())
 
+    def keyPressEvent(self, event):
+        super(TableView, self).keyPressEvent(event)
+        # Ctrl + C
+        if event.modifiers() == Qt.ControlModifier and event.key() == Qt.Key_C:
+            self.copyData()
 
-class ListView(QListView):
+    def copyData(self):
+        count = len(self.selectedIndexes())
+        if count == 0:
+            return
+        if count == 1:  # 只复制了一个
+            QApplication.clipboard().setText(
+                self.selectedIndexes()[0].data())  # 复制到剪贴板中
+            return
+        rows = set()
+        cols = set()
+        for index in self.selectedIndexes():  # 得到所有选择的
+            rows.add(index.row())
+            cols.add(index.column())
+            # print(index.row(),index.column(),index.data())
+        if len(rows) == 1:  # 一行
+            QApplication.clipboard().setText("\t".join(
+                [index.data() for index in self.selectedIndexes()]))  # 复制
+            return
+        if len(cols) == 1:  # 一列
+            QApplication.clipboard().setText("\r\n".join(
+                [index.data() for index in self.selectedIndexes()]))  # 复制
+            return
+        mirow, marow = min(rows), max(rows)  # 最(少/多)行
+        micol, macol = min(cols), max(cols)  # 最(少/多)列
+        print(mirow, marow, micol, macol)
+        arrays = [
+            [
+                "" for _ in range(macol - micol + 1)
+            ] for _ in range(marow - mirow + 1)
+        ]  # 创建二维数组(并排除前面的空行和空列)
+        print(arrays)
+        # 填充数据
+        for index in self.selectedIndexes():  # 遍历所有选择的
+            arrays[index.row() - mirow][index.column() - micol] = index.data()
+        print(arrays)
+        data = ""  # 最后的结果
+        for row in arrays:
+            data += "\t".join(row) + "\r\n"
+        print(data)
+        QApplication.clipboard().setText(data)  # 复制到剪贴板中
 
-    def __init__(self, *args, **kwargs):
-        super(ListView, self).__init__(*args, **kwargs)
-        # 模型
-        self._model = QStandardItemModel(self)
-        self.setModel(self._model)
+    def initHeader(self):
+        self.myModel.setHorizontalHeaderItem(0, QStandardItem("单词"))
+        self.myModel.setHorizontalHeaderItem(1, QStandardItem("词意"))
 
+    def initData(self):
         csvfile = open("../resource/vivo_edited.csv", newline='', encoding='utf-8')
         reader = csv.reader(csvfile)
-        for row in reader:
-            pos = row[1].find("vi.")
-            if -1 == pos:
-                continue
-            item = QStandardItem()
-            self._model.appendRow(item)  # 添加item
-            # 得到索引
-            index = self._model.indexFromItem(item)
-            widget = CustomWidget(row[0], row[1])
-            item.setSizeHint(widget.sizeHint())  # 主要是调整item的高度
-            # 设置自定义的widget
-            self.setIndexWidget(index, widget)
+        row = 0
+        for word in reader:
+            pos = word[1].find("vi.")
+            self.myModel.setItem(row, 0, QStandardItem(word[0]))
+            self.myModel.setItem(row, 1, QStandardItem(word[1]))
+            row = row + 1
 
+        self.setColumnWidth(0, 100)
+        self.setColumnWidth(1, 500)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    w = ListView()
-    w.resize(800, 500)
+    app.setApplicationName("english")
 
-    w.show()
+    window = QMainWindow()
+    window.resize(800, 600)
+
+    table_view = TableView()
+
+    window.setCentralWidget(table_view)
+    window.show()
     sys.exit(app.exec_())
