@@ -1,6 +1,7 @@
 import sys
 import requests
 import os
+import csv
 from bs4 import BeautifulSoup
 from playsound import playsound
 from FileManager import FileManager
@@ -38,6 +39,10 @@ def on_button_click(word):
     soup = BeautifulSoup(response.content, "html.parser")
 
     audio = soup.find('span', {'class': 'sound audio_play_button dflex middle-xs'})
+
+    if audio is None:
+        return
+
     audio_url = audio['data-src-mp3']
 
     # 下载 MP3 文件
@@ -73,16 +78,17 @@ class ListView(QListView):
         self._model = QStandardItemModel(self)
         self.setModel(self._model)
 
-        fileManager = FileManager()
-        words_list = fileManager.get_words_list()
-        # 循环生成10个自定义控件
-        for word in words_list:
+        csvfile = open("../resource/vivo_edited.csv", newline='', encoding='utf-8')
+        reader = csv.reader(csvfile)
+        for row in reader:
+            pos = row[1].find("vi.")
+            if -1 == pos:
+                continue
             item = QStandardItem()
             self._model.appendRow(item)  # 添加item
-
             # 得到索引
             index = self._model.indexFromItem(item)
-            widget = CustomWidget(word[0], word[1])
+            widget = CustomWidget(row[0], row[1])
             item.setSizeHint(widget.sizeHint())  # 主要是调整item的高度
             # 设置自定义的widget
             self.setIndexWidget(index, widget)
