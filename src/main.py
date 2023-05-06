@@ -8,7 +8,7 @@ from playsound import playsound
 try:
     from PyQt5.QtCore import Qt
     from PyQt5.QtGui import QStandardItemModel, QStandardItem
-    from PyQt5.QtWidgets import QTableView, QApplication, QAction, QMainWindow
+    from PyQt5.QtWidgets import QTableView, QApplication, QAction, QMainWindow, QMenuBar, QMenu
 except ImportError:
     from PySide2.QtCore import Qt
     from PySide2.QtGui import QStandardItemModel, QStandardItem
@@ -51,7 +51,7 @@ def on_button_click(word):
 
 class TableView(QTableView):
 
-    def __init__(self, parent=None):
+    def __init__(self, filePath, parent=None):
         super(TableView, self).__init__(parent)
         self.resize(800, 600)
         self.setContextMenuPolicy(Qt.ActionsContextMenu)  # 右键菜单
@@ -61,7 +61,7 @@ class TableView(QTableView):
         self.myModel = QStandardItemModel()  # model
         self.initHeader()  # 初始化表头
         self.setModel(self.myModel)
-        self.initData()  # 初始化模拟数据
+        self.initData(filePath)  # 初始化模拟数据
 
     def onDoubleClick(self, index):
         if 0 == index.column():
@@ -118,8 +118,8 @@ class TableView(QTableView):
         self.myModel.setHorizontalHeaderItem(0, QStandardItem("单词"))
         self.myModel.setHorizontalHeaderItem(1, QStandardItem("词意"))
 
-    def initData(self):
-        csvfile = open("../resource/vivo_edited.csv", newline='', encoding='utf-8')
+    def initData(self, filePath):
+        csvfile = open(filePath, newline='', encoding='utf-8')
         reader = csv.reader(csvfile)
         row = 0
         for word in reader:
@@ -131,15 +131,52 @@ class TableView(QTableView):
         self.setColumnWidth(0, 100)
         self.setColumnWidth(1, 500)
 
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        # 创建菜单栏
+        menu_bar = QMenuBar()
+
+        # 添加TableView的菜单
+        english_classes = QMenu("English classes", menu_bar)
+        menu_bar.addMenu(english_classes)
+
+        # 添加annimal的子菜单
+        annimal_action = QAction("annimal", self)
+        annimal_action.triggered.connect(self.on_annimal)
+        english_classes.addAction(annimal_action)
+
+        # 添加medical的子菜单
+        medical_action = QAction("medical", self)
+        medical_action.triggered.connect(self.on_medical)
+        english_classes.addAction(medical_action)        
+
+
+        # 将菜单栏添加到主窗口上
+        self.setMenuBar(menu_bar)
+
+    def on_annimal(self):
+        table_view = TableView("../resource/annimal.csv")
+
+        window.setCentralWidget(table_view)
+
+        table_view.show()
+
+    def on_medical(self):
+        table_view = TableView("../resource/medical.csv")
+
+        window.setCentralWidget(table_view)
+
+        table_view.show()
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setApplicationName("english")
 
-    window = QMainWindow()
+    window = MainWindow()
     window.resize(800, 600)
 
-    table_view = TableView()
-
-    window.setCentralWidget(table_view)
     window.show()
     sys.exit(app.exec_())
