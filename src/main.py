@@ -132,24 +132,58 @@ class MainWindow(QMainWindow):
         medical_action.triggered.connect(self.on_medical)
         english_classes.addAction(medical_action)        
 
+        # 添加adj的子菜单
+        adj_action = QAction("adj", self)
+        adj_action.triggered.connect(self.on_adj)
+        english_classes.addAction(adj_action)
+
+        # 添加adv的子菜单
+        adv_action = QAction("adv", self)
+        adv_action.triggered.connect(self.on_adv)
+        english_classes.addAction(adv_action) 
+
+        # 添加vi的子菜单
+        vi_action = QAction("vi", self)
+        vi_action.triggered.connect(self.on_vi)
+        english_classes.addAction(vi_action) 
+
+        # 添加vt的子菜单
+        vt_action = QAction("vt", self)
+        vt_action.triggered.connect(self.on_vt)
+        english_classes.addAction(vt_action) 
 
         # 将菜单栏添加到主窗口上
         self.setMenuBar(menu_bar)
 
     def on_annimal(self):
         table_view = TableView("../resource/annimal.csv")
-
         window.setCentralWidget(table_view)
-
         table_view.show()
 
     def on_medical(self):
         table_view = TableView("../resource/medical.csv")
-
         window.setCentralWidget(table_view)
-
         table_view.show()
 
+    def on_adj(self):
+        table_view = TableView("../resource/adj.csv")
+        window.setCentralWidget(table_view)
+        table_view.show()
+
+    def on_adv(self):
+        table_view = TableView("../resource/adv.csv")
+        window.setCentralWidget(table_view)
+        table_view.show()
+
+    def on_vi(self):
+        table_view = TableView("../resource/vi.csv")
+        window.setCentralWidget(table_view)
+        table_view.show()
+
+    def on_vt(self):
+        table_view = TableView("../resource/vt.csv")
+        window.setCentralWidget(table_view)
+        table_view.show()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
