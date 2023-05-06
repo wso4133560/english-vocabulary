@@ -2,6 +2,7 @@ import sys
 import requests
 import os
 import csv
+import threading
 from bs4 import BeautifulSoup
 from playsound import playsound
 from gtts import gTTS
@@ -29,6 +30,11 @@ def on_button_click(word):
     speech.save(filePath)
     playsound(filePath)
 
+def read_words_cycle(table_view):
+    words = table_view.get_words()
+    for word in words:
+        on_button_click(word)
+
 class TableView(QTableView):
 
     def __init__(self, filePath, parent=None):
@@ -42,6 +48,7 @@ class TableView(QTableView):
         self.initHeader()  # 初始化表头
         self.setModel(self.myModel)
         self.words = []
+        self.row = 0
         self.initData(filePath)  # 初始化模拟数据
 
     def onDoubleClick(self, index):
@@ -102,19 +109,22 @@ class TableView(QTableView):
     def initData(self, filePath):
         csvfile = open(filePath, newline='', encoding='utf-8')
         reader = csv.reader(csvfile)
-        row = 0
+        self.row = 0
         for word in reader:
             self.words.append(word[0])
             pos = word[1].find("vi.")
-            self.myModel.setItem(row, 0, QStandardItem(word[0]))
-            self.myModel.setItem(row, 1, QStandardItem(word[1]))
-            row = row + 1
+            self.myModel.setItem(self.row, 0, QStandardItem(word[0]))
+            self.myModel.setItem(self.row, 1, QStandardItem(word[1]))
+            self.row = self.row + 1
 
         self.setColumnWidth(0, 100)
         self.setColumnWidth(1, 500)
 
     def get_words(self):
         return self.words
+
+    def get_lines(self):
+        return self.row
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -160,15 +170,16 @@ class MainWindow(QMainWindow):
         # 将菜单栏添加到主窗口上
         self.setMenuBar(menu_bar)
 
-    def read_words_by_cycle(self, words):
-        for word in words:
-            on_button_click(word)
+    def read_words_by_cycle(self, table_view):
+        arg_value = [table_view]
+        my_thread = threading.Thread(target=read_words_cycle, args=(arg_value))
+        my_thread.start()
 
     def layout(self, table_view):
         # 创建一个QPushButton
         button = QPushButton("循环朗诵")
 
-        button.clicked.connect(lambda: self.read_words_by_cycle(table_view.get_words()))
+        button.clicked.connect(lambda: self.read_words_by_cycle(table_view))
 
         # 创建一个水平布局并将按钮添加到该布局中
         button_layout = QHBoxLayout()
