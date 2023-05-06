@@ -4,6 +4,7 @@ import os
 import csv
 from bs4 import BeautifulSoup
 from playsound import playsound
+from gtts import gTTS
 
 try:
     from PyQt5.QtCore import Qt
@@ -21,32 +22,11 @@ def on_button_click(word):
     if os.path.isfile(filePath):
         playsound(filePath)
         return
-    # 没有就下载
-    # 构造 URL
-    url = f"https://www.macmillandictionary.com/dictionary/british/{word}"
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36",
-    }
+    language = 'en'
 
-    # 发送请求获取 HTML 页面
-    response = requests.get(url, headers=headers)
-
-    # 解析 HTML 页面
-    soup = BeautifulSoup(response.content, "html.parser")
-
-    audio = soup.find('span', {'class': 'sound audio_play_button dflex middle-xs'})
-
-    if audio is None:
-        return
-
-    audio_url = audio['data-src-mp3']
-
-    # 下载 MP3 文件
-    response = requests.get(audio_url, headers=headers)
-
-    with open(filePath, "wb") as f:
-        f.write(response.content)
+    speech = gTTS(text=word, lang=language, slow=True)
+    speech.save(filePath)
     playsound(filePath)
 
 class TableView(QTableView):
