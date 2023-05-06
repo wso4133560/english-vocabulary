@@ -9,7 +9,7 @@ from gtts import gTTS
 try:
     from PyQt5.QtCore import Qt
     from PyQt5.QtGui import QStandardItemModel, QStandardItem
-    from PyQt5.QtWidgets import QTableView, QApplication, QAction, QMainWindow, QMenuBar, QMenu
+    from PyQt5.QtWidgets import QTableView, QApplication, QAction, QMainWindow, QMenuBar, QMenu, QPushButton, QVBoxLayout, QHBoxLayout, QWidget
 except ImportError:
     from PySide2.QtCore import Qt
     from PySide2.QtGui import QStandardItemModel, QStandardItem
@@ -41,6 +41,7 @@ class TableView(QTableView):
         self.myModel = QStandardItemModel()  # model
         self.initHeader()  # 初始化表头
         self.setModel(self.myModel)
+        self.words = []
         self.initData(filePath)  # 初始化模拟数据
 
     def onDoubleClick(self, index):
@@ -103,6 +104,7 @@ class TableView(QTableView):
         reader = csv.reader(csvfile)
         row = 0
         for word in reader:
+            self.words.append(word[0])
             pos = word[1].find("vi.")
             self.myModel.setItem(row, 0, QStandardItem(word[0]))
             self.myModel.setItem(row, 1, QStandardItem(word[1]))
@@ -110,6 +112,9 @@ class TableView(QTableView):
 
         self.setColumnWidth(0, 100)
         self.setColumnWidth(1, 500)
+
+    def get_words(self):
+        return self.words
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -155,35 +160,56 @@ class MainWindow(QMainWindow):
         # 将菜单栏添加到主窗口上
         self.setMenuBar(menu_bar)
 
+    def read_words_by_cycle(self, words):
+        for word in words:
+            on_button_click(word)
+
+    def layout(self, table_view):
+        # 创建一个QPushButton
+        button = QPushButton("循环朗诵")
+
+        button.clicked.connect(lambda: self.read_words_by_cycle(table_view.get_words()))
+
+        # 创建一个水平布局并将按钮添加到该布局中
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        button_layout.addWidget(button)
+        button_layout.addStretch()
+
+        # 创建一个垂直布局并将table_view和button_layout添加到该布局中
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(table_view)
+        main_layout.addLayout(button_layout)
+
+        # 创建一个QWidget并将垂直布局设置为其布局
+        widget = QWidget()
+        widget.setLayout(main_layout)
+
+        self.setCentralWidget(widget)
+
     def on_annimal(self):
         table_view = TableView("../resource/annimal.csv")
-        window.setCentralWidget(table_view)
-        table_view.show()
+        self.layout(table_view)
 
     def on_medical(self):
         table_view = TableView("../resource/medical.csv")
-        window.setCentralWidget(table_view)
-        table_view.show()
+        self.layout(table_view)
 
     def on_adj(self):
         table_view = TableView("../resource/adj.csv")
-        window.setCentralWidget(table_view)
-        table_view.show()
+        self.layout(table_view)
 
     def on_adv(self):
         table_view = TableView("../resource/adv.csv")
-        window.setCentralWidget(table_view)
-        table_view.show()
+        self.layout(table_view)
 
     def on_vi(self):
         table_view = TableView("../resource/vi.csv")
-        window.setCentralWidget(table_view)
-        table_view.show()
+        self.layout(table_view)
 
     def on_vt(self):
         table_view = TableView("../resource/vt.csv")
-        window.setCentralWidget(table_view)
-        table_view.show()
+        self.layout(table_view)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
