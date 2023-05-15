@@ -7,14 +7,9 @@ from bs4 import BeautifulSoup
 from playsound import playsound
 from gtts import gTTS
 
-try:
-    from PyQt5.QtCore import Qt
-    from PyQt5.QtGui import QStandardItemModel, QStandardItem
-    from PyQt5.QtWidgets import QTableView, QApplication, QAction, QMainWindow, QMenuBar, QMenu, QPushButton, QVBoxLayout, QHBoxLayout, QWidget
-except ImportError:
-    from PySide2.QtCore import Qt
-    from PySide2.QtGui import QStandardItemModel, QStandardItem
-    from PySide2.QtWidgets import QTableView, QApplication, QAction
+from PyQt5.QtCore import Qt, QModelIndex, QItemSelectionModel
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtWidgets import QTableView, QApplication, QAction, QMainWindow, QMenuBar, QMenu, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QAbstractItemView
 
 def on_button_click(word):
     word = word.lower()
@@ -32,7 +27,10 @@ def on_button_click(word):
 
 def read_words_cycle(table_view):
     words = table_view.get_words()
+    row = 0
     for word in words:
+        table_view.select_and_scroll_to_row(row)
+        row = row + 1
         on_button_click(word)
 
 class TableView(QTableView):
@@ -126,6 +124,15 @@ class TableView(QTableView):
     def get_lines(self):
         return self.row
 
+    def select_and_scroll_to_row(self, row_index):
+        # 获取当前选中行的模型
+        selection_model: QItemSelectionModel = self.selectionModel()
+        # 将选中行设置为row_index
+        index = self.model().index(row_index, 0, QModelIndex())
+        selection_model.select(index, QItemSelectionModel.ClearAndSelect | QItemSelectionModel.Rows)
+        # 将选中行滚动到可见区域
+        self.scrollTo(index, QAbstractItemView.PositionAtTop)
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -136,11 +143,6 @@ class MainWindow(QMainWindow):
         # 添加TableView的菜单
         english_classes = QMenu("English classes", menu_bar)
         menu_bar.addMenu(english_classes)
-
-        # 添加annimal的子菜单
-        annimal_action = QAction("annimal", self)
-        annimal_action.triggered.connect(self.on_annimal)
-        english_classes.addAction(annimal_action)
 
         # 添加medical的子菜单
         medical_action = QAction("medical", self)
@@ -166,6 +168,20 @@ class MainWindow(QMainWindow):
         vt_action = QAction("vt", self)
         vt_action.triggered.connect(self.on_vt)
         english_classes.addAction(vt_action) 
+
+        # 添加TableView的菜单
+        n_classes = QMenu("名词", menu_bar)
+        menu_bar.addMenu(n_classes)
+
+        # 添加annimal的子菜单
+        annimal_action = QAction("annimal", self)
+        annimal_action.triggered.connect(self.on_annimal)
+        n_classes.addAction(annimal_action)
+
+        # 添加vegetable的子菜单
+        vegetable_atction = QAction("vegetable", self)
+        vegetable_atction.triggered.connect(self.on_vegetable)
+        n_classes.addAction(vegetable_atction)
 
         # 将菜单栏添加到主窗口上
         self.setMenuBar(menu_bar)
@@ -198,10 +214,6 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(widget)
 
-    def on_annimal(self):
-        table_view = TableView("../resource/annimal.csv")
-        self.layout(table_view)
-
     def on_medical(self):
         table_view = TableView("../resource/medical.csv")
         self.layout(table_view)
@@ -220,6 +232,14 @@ class MainWindow(QMainWindow):
 
     def on_vt(self):
         table_view = TableView("../resource/vt.csv")
+        self.layout(table_view)
+
+    def on_annimal(self):
+        table_view = TableView("../resource/annimal.csv")
+        self.layout(table_view)
+
+    def on_vegetable(self):
+        table_view = TableView("../resource/vegetable.csv")
         self.layout(table_view)
 
 if __name__ == '__main__':
