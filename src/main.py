@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from playsound import playsound
 from gtts import gTTS
 
-from PyQt5.QtCore import Qt, QModelIndex, QItemSelectionModel
+from PyQt5.QtCore import Qt, QModelIndex, QItemSelectionModel, QThread, pyqtSignal
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QTableView, QApplication, QAction, QMainWindow, QMenuBar, QMenu, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QAbstractItemView
 
@@ -25,13 +25,20 @@ def on_button_click(word):
     speech.save(filePath)
     playsound(filePath)
 
-def read_words_cycle(table_view):
-    words = table_view.get_words()
-    row = 0
-    for word in words:
-        table_view.select_and_scroll_to_row(row)
-        row = row + 1
-        on_button_click(word)
+class ReadCycleThread(QThread):
+    finished_signal = pyqtSignal()
+
+    def __init__(self, table_view):
+        super().__init__()
+        self.table_view = table_view
+
+    def run(self):
+        words = self.table_view.get_words()
+        row = 0
+        for word in words:
+            self.table_view.select_and_scroll_to_row(row)
+            row = row + 1
+            on_button_click(word)
 
 class TableView(QTableView):
 
@@ -186,10 +193,19 @@ class MainWindow(QMainWindow):
         # 将菜单栏添加到主窗口上
         self.setMenuBar(menu_bar)
 
+    def closeEvent(self, event):
+        # 停止所有的线程
+        self.thread.requestInterruption()
+        self.thread.finished_signal.disconnect(self.on_thread_finished)
+        self.thread.wait()
+        event.accept()
+
+    def on_thread_finished(self):
+        self.button.setEnabled(True)
+
     def read_words_by_cycle(self, table_view):
-        arg_value = [table_view]
-        my_thread = threading.Thread(target=read_words_cycle, args=(arg_value))
-        my_thread.start()
+        self.thread = ReadCycleThread(table_view)
+        self.thread.start()
 
     def layout(self, table_view):
         # 创建一个QPushButton
