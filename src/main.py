@@ -28,11 +28,10 @@ def on_button_click(word):
     playsound(filePath)
 
 class ReadCycleThread(QThread):
-    finished_signal = pyqtSignal()
-
     def __init__(self, table_view):
         super().__init__()
         self.table_view = table_view
+        self.finished_signal = pyqtSignal()
 
     def run(self):
         words = self.table_view.get_words()
@@ -126,7 +125,7 @@ class TableView(QTableView):
             self.myModel.setItem(self.row, 1, QStandardItem(word[1]))
             self.row = self.row + 1
 
-        self.setColumnWidth(0, 100)
+        self.setColumnWidth(0, 200)
         self.setColumnWidth(1, 500)
 
     def get_words(self):

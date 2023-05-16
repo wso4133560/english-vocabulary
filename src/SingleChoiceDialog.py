@@ -27,6 +27,8 @@ class SingleChoiceDialog(QDialog):
 
         self.get_random_options()
 
+        self.resize(400, 300)
+
     def get_answer(self):
         if self.button_group.checkedButton():
             answer = self.option_buttons.index(self.button_group.checkedButton())
