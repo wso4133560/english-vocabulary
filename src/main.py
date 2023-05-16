@@ -182,6 +182,11 @@ class MainWindow(QMainWindow):
         vegetable_atction.triggered.connect(self.on_vegetable)
         n_classes.addAction(vegetable_atction)
 
+        # 添加fruit的子菜单
+        fruit_atction = QAction("fruit", self)
+        fruit_atction.triggered.connect(self.on_fruit)
+        n_classes.addAction(fruit_atction)
+
         # 将菜单栏添加到主窗口上
         self.setMenuBar(menu_bar)
 
@@ -255,6 +260,10 @@ class MainWindow(QMainWindow):
 
     def on_vegetable(self):
         table_view = TableView("../resource/vegetable.csv")
+        self.layout(table_view)
+
+    def on_fruit(self):
+        table_view = TableView("../resource/fruit.csv")
         self.layout(table_view)
 
 if __name__ == '__main__':
