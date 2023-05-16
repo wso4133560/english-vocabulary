@@ -187,6 +187,11 @@ class MainWindow(QMainWindow):
         fruit_atction.triggered.connect(self.on_fruit)
         n_classes.addAction(fruit_atction)
 
+        # 添加metal的子菜单
+        metal_atction = QAction("metal", self)
+        metal_atction.triggered.connect(self.on_metal)
+        n_classes.addAction(metal_atction)
+
         # 将菜单栏添加到主窗口上
         self.setMenuBar(menu_bar)
 
@@ -264,6 +269,10 @@ class MainWindow(QMainWindow):
 
     def on_fruit(self):
         table_view = TableView("../resource/fruit.csv")
+        self.layout(table_view)
+
+    def on_metal(self):
+        table_view = TableView("../resource/metal.csv")
         self.layout(table_view)
 
 if __name__ == '__main__':

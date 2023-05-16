@@ -62,4 +62,5 @@ class SingleChoiceDialog(QDialog):
                     value = random.choice(values)
                 self.option_buttons[i].setText(value)
                 false_values.add(value)
+        self.update()
         read_word(random_key)
