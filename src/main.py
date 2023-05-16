@@ -11,6 +11,8 @@ from PyQt5.QtCore import Qt, QModelIndex, QItemSelectionModel, QThread, pyqtSign
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QTableView, QApplication, QAction, QMainWindow, QMenuBar, QMenu, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QAbstractItemView
 
+from SingleChoiceDialog import SingleChoiceDialog
+
 def on_button_click(word):
     word = word.lower()
     # check ../mp3/下是否有此单词的mp3文件
@@ -53,6 +55,7 @@ class TableView(QTableView):
         self.initHeader()  # 初始化表头
         self.setModel(self.myModel)
         self.words = []
+        self.words_list = dict()
         self.row = 0
         self.initData(filePath)  # 初始化模拟数据
 
@@ -117,6 +120,7 @@ class TableView(QTableView):
         self.row = 0
         for word in reader:
             self.words.append(word[0])
+            self.words_list[word[0]] = word[1]
             pos = word[1].find("vi.")
             self.myModel.setItem(self.row, 0, QStandardItem(word[0]))
             self.myModel.setItem(self.row, 1, QStandardItem(word[1]))
@@ -127,6 +131,9 @@ class TableView(QTableView):
 
     def get_words(self):
         return self.words
+
+    def get_words_list(self):
+        return self.words_list
 
     def get_lines(self):
         return self.row
@@ -207,16 +214,23 @@ class MainWindow(QMainWindow):
         self.thread = ReadCycleThread(table_view)
         self.thread.start()
 
+    def question_dialog(self, table_view):
+        dialog = SingleChoiceDialog(table_view.get_words_list())
+        dialog.exec_()
+
     def layout(self, table_view):
         # 创建一个QPushButton
         button = QPushButton("循环朗诵")
+        question_button = QPushButton("单项选择对话框")
 
         button.clicked.connect(lambda: self.read_words_by_cycle(table_view))
+        question_button.clicked.connect(lambda: self.question_dialog(table_view))
 
         # 创建一个水平布局并将按钮添加到该布局中
         button_layout = QHBoxLayout()
         button_layout.addStretch()
         button_layout.addWidget(button)
+        button_layout.addWidget(question_button)
         button_layout.addStretch()
 
         # 创建一个垂直布局并将table_view和button_layout添加到该布局中
