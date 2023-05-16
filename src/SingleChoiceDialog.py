@@ -1,5 +1,6 @@
 import sys
 import random
+from read_word import read_word
 from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QButtonGroup, QRadioButton, QPushButton, QMessageBox
 
 class SingleChoiceDialog(QDialog):
@@ -61,3 +62,4 @@ class SingleChoiceDialog(QDialog):
                     value = random.choice(values)
                 self.option_buttons[i].setText(value)
                 false_values.add(value)
+        read_word(random_key)

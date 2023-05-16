@@ -3,29 +3,15 @@ import requests
 import os
 import csv
 import threading
+
+from read_word import read_word
 from bs4 import BeautifulSoup
-from playsound import playsound
-from gtts import gTTS
 
 from PyQt5.QtCore import Qt, QModelIndex, QItemSelectionModel, QThread, pyqtSignal
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QTableView, QApplication, QAction, QMainWindow, QMenuBar, QMenu, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QAbstractItemView
 
 from SingleChoiceDialog import SingleChoiceDialog
-
-def on_button_click(word):
-    word = word.lower()
-    # check ../mp3/下是否有此单词的mp3文件
-    filePath = f"../mp3/{word}.mp3"
-    if os.path.isfile(filePath):
-        playsound(filePath)
-        return
-
-    language = 'en'
-
-    speech = gTTS(text=word, lang=language, slow=True)
-    speech.save(filePath)
-    playsound(filePath)
 
 class ReadCycleThread(QThread):
     def __init__(self, table_view):
@@ -39,7 +25,7 @@ class ReadCycleThread(QThread):
         for word in words:
             self.table_view.select_and_scroll_to_row(row)
             row = row + 1
-            on_button_click(word)
+            read_word(word)
 
 class TableView(QTableView):
 
@@ -60,7 +46,7 @@ class TableView(QTableView):
 
     def onDoubleClick(self, index):
         if 0 == index.column():
-            on_button_click(index.data())
+            read_word(index.data())
 
     def keyPressEvent(self, event):
         super(TableView, self).keyPressEvent(event)
