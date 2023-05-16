@@ -7,6 +7,7 @@ class SingleChoiceDialog(QDialog):
     def __init__(self, words):
         super().__init__()
         self.words = words
+        self.unselectedWords = words
 
         self.question_label = QLabel()
         self.option_buttons = []
@@ -42,12 +43,19 @@ class SingleChoiceDialog(QDialog):
             reply = QMessageBox.question(self, 'Message', '请选择一个选项', QMessageBox.Yes)
 
     def get_random_options(self):
+        # 判断是否为空
+        if len(self.unselectedWords) == 0:
+            reply = QMessageBox.question(self, 'Message', '单词已经用完', QMessageBox.Yes)
+            return
+
         # 获取所有key组成的列表
-        keys = list(self.words.keys())
+        keys = list(self.unselectedWords.keys())
         # 从key列表中随机选择一个key
         random_key = random.choice(keys)
         self.question_label.setText("请选择{}单词的意思:".format(random_key))
-        random_value = self.words[random_key]
+        random_value = self.unselectedWords[random_key]
+        # 删除键值
+        del self.unselectedWords[random_key]
 
         values = list(self.words.values())
         self.answer_pos = random.randint(0, 3)
