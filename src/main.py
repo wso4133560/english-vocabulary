@@ -192,6 +192,15 @@ class MainWindow(QMainWindow):
         metal_atction.triggered.connect(self.on_metal)
         n_classes.addAction(metal_atction)
 
+        # 词汇
+        root_prefix_suffix = QMenu("root-prefix-suffix", menu_bar)
+        menu_bar.addMenu(root_prefix_suffix)
+
+        # 添加root的子菜单
+        root_action = QAction("root", self)
+        root_action.triggered.connect(self.on_root)
+        root_prefix_suffix.addAction(root_action)
+
         # 将菜单栏添加到主窗口上
         self.setMenuBar(menu_bar)
 
@@ -273,6 +282,10 @@ class MainWindow(QMainWindow):
 
     def on_metal(self):
         table_view = TableView("../resource/metal.csv")
+        self.layout(table_view)
+
+    def on_root(self):
+        table_view = TableView("../resource/root.csv")
         self.layout(table_view)
 
 if __name__ == '__main__':
