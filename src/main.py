@@ -206,6 +206,11 @@ class MainWindow(QMainWindow):
         prefix_action.triggered.connect(self.on_prefix)
         root_prefix_suffix.addAction(prefix_action)
 
+        # 添加suffix的子菜单
+        suffix_action = QAction("suffix", self)
+        suffix_action.triggered.connect(self.on_suffix)
+        root_prefix_suffix.addAction(suffix_action)
+
         # 将菜单栏添加到主窗口上
         self.setMenuBar(menu_bar)
 
@@ -295,6 +300,10 @@ class MainWindow(QMainWindow):
 
     def on_prefix(self):
         table_view = TableView("../resource/prefix.csv")
+        self.layout(table_view)
+
+    def on_suffix(self):
+        table_view = TableView("../resource/suffix.csv")
         self.layout(table_view)
 
 if __name__ == '__main__':
