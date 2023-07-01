@@ -64,10 +64,10 @@ class SingleChoiceDialog(QDialog):
         if self.button_group.checkedButton():
             answer = self.option_buttons.index(self.button_group.checkedButton())
             if answer == self.answer_pos:
-                reply = QMessageBox.question(self, 'Message', '选择正确', QMessageBox.Yes)
+                reply = QMessageBox.question(self, 'Message', self.selected_word, QMessageBox.Yes)
                 self.get_random_options()
             else:
-                reply = QMessageBox.question(self, 'Message', '选择错误', QMessageBox.Yes)
+                reply = QMessageBox.question(self, 'Message', self.selected_word, QMessageBox.Yes)
         else:
             reply = QMessageBox.question(self, 'Message', '请选择一个选项', QMessageBox.Yes)
 
@@ -85,14 +85,21 @@ class SingleChoiceDialog(QDialog):
         self.list_label.setText("还剩余{}单词:".format(len_words))
         self.answer_pos = random.randint(0, 3)
 
+        repeat = dict()
+
         for i in range(0, 4):
             if i == self.answer_pos:
                 self.option_buttons[i].setText(self.selected_meaning)
             else:
                 while True:
                     random_item = random.choice(self.words_meanings)
+
+                    if repeat.get(random_item):
+                        continue
+
                     if random_item != self.selected_meaning:
                         self.option_buttons[i].setText(random_item)
+                        repeat[random_item] = 0
                         break
     
     def read_word(self):
