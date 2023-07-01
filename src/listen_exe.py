@@ -73,6 +73,8 @@ class SingleChoiceDialog(QDialog):
 
     def get_random_options(self):
         keys = list(self.words_list.keys())
+        if None == keys:
+            return
         random_key = random.choice(keys)
 
         self.selected_word = random_key
